@@ -1,0 +1,764 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnyFeed</title>
+  <link rel="shortcut icon" href="{% static 'images/favicon logo.png' %}" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+    }
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+}
+
+.navbar img {
+  height: 40px;
+}
+
+.search-bar {
+  flex: 1 1 auto;
+  margin: 8px 12px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+}
+
+.user-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  .user-btn {
+    align-self: flex-end;
+    margin-top: 8px;
+  }
+}
+
+
+.top-scroll {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge */
+}
+
+.top-scroll::-webkit-scrollbar {
+  display: none;  /* Chrome/Safari */
+}
+
+
+.filter-dropdown {
+  position: relative;
+}
+
+.filter-btn {
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  color: #333;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-options {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  flex-direction: column;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  min-width: 150px;
+}
+
+.filter-options button {
+  padding: 10px 12px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+}
+
+.filter-options button:hover {
+  background: #f0f0f0;
+}
+
+    #changeFeedBtn {
+      border: 1px solid #ccc;
+      background: #eee;
+      color: #111;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #changeFeedBtn.active {
+      background: #111;
+      color: #fff;
+    }
+    #videoContainer{
+      z-index: -1;
+    }
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .video-card {
+      background: #fff;
+      border-radius: 0px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+
+    .video-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .video-thumb {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .video-info {
+      padding: 12px 16px;
+    }
+
+    .video-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #222;
+    }
+
+    .video-channel {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .view-more {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 24px;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .language-scroll {
+      margin-left: 10px;
+    }
+    #languageSelect{
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #aaa;
+      background-color: #f8f8f8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+
+.user-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+  padding: 20px;
+  z-index: 9999;
+  transition: right 0.3s ease;
+}
+
+.user-panel.open {
+  right: 0;
+}
+
+.panel-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 9998;
+  display: none;
+}
+
+.panel-overlay.show {
+  display: block;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #333;
+  cursor: pointer;
+}
+
+.user-content {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.user-content img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.edit-btn, .logout-btn {
+  display: block;
+  margin: 10px auto;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background-color: #111;
+  color: white;
+  text-decoration: none;
+  width: 80%;
+}
+
+.edit-btn:hover, .logout-btn:hover {
+  background-color: #333;
+}
+
+
+
+    /* -------------------------- */
+    @media (max-width: 768px) {
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+    .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .top-scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+}
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  .user-btn {
+    align-self: flex-end;
+    margin-top: 8px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnyFeed</title>
+  <link rel="shortcut icon" href="{% static 'images/favicon logo.png' %}" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .navbar {
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .navbar img {
+      height: 40px;
+    }
+    .search-bar {
+      flex: 1;
+      margin: 10px;
+    }
+    .search-bar input {
+      width: 98%;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+    }
+    .user-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      border-radius: 50%;
+      color: #333;
+      align-self: center;
+    }
+
+    .top-scroll {
+      position: sticky;
+      top: 0%;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 10px 16px;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      scrollbar-width: none;
+    }
+
+    .top-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .top-scroll > * {
+      flex: 0 0 auto;
+    }
+
+    .filter-dropdown {
+      position: relative;
+    }
+
+    .filter-btn {
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      color: #333;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+  .filter-options {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000; /* 🔥 Important: must be higher than video grid */
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    flex-direction: column;
+    min-width: 160px;
+  }
+
+    .filter-options button {
+      padding: 10px 12px;
+      border: none;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .filter-options button:hover {
+      background: #f0f0f0;
+    }
+
+    #changeFeedBtn {
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #111;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    #changeFeedBtn.active {
+      background: #111;
+      color: #fff;
+    }
+
+    .language-scroll {
+      margin-left: 10px;
+    }
+
+    #languageSelect {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #aaa;
+      background-color: #f8f8f8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.avatar-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 80%;
+  object-fit: cover;
+  margin: 0;
+  display: inline-block;
+}
+
+
+/* 🔽 Add this below the .video-grid CSS */
+@media (max-width: 600px) {
+  .video-grid {
+    grid-template-columns: 1fr; /* 1 video per row on phones */
+  }
+}
+
+
+    @media (max-width: 768px) {
+      .navbar {
+        align-items: center;
+      }
+
+    .navbar img {
+      height: 20px;
+    }
+
+      .search-bar {
+        width: 3%;
+        margin: 0px 10px;
+      }
+      .search-bar input{
+        width: 89%;
+      }
+      .user-btn{
+        margin: 2px 0px;
+      }
+
+      .top-scroll {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <a href="/"><img src="{% static 'images/logo.png' %}" alt="Logo" /></a>
+
+  <form class="search-bar" method="GET" action="{% url 'search_results' %}">
+  <input type="text" name="q" placeholder="Search..." />
+  </form>
+
+  {% if request.user.userprofile.avatar %}
+    <button class="user-btn" id="userIcon"><img id="userAvatar" src="{{ user.userprofile.avatar.url }}" alt="Custom Avatar" class="avatar-icon"></button>
+{% elif request.user.userprofile.avatar_url %}
+    <button class="user-btn" id="userIcon"><img id="userAvatar" src="{{ user.userprofile.avatar_url }}" alt="Google Avatar" class="avatar-icon"></button>
+{% else %}
+    <button class="user-btn" id="userIcon"><i class="fas fa-user-circle"></i></button>
+{% endif %}
+</div>
+
+<!-- Top Scroll Panel -->
+<div class="top-scroll d-flex flex-wrap align-items-center px-2 py-2 bg-white border-bottom" style="gap: 8px; overflow-x: auto; white-space: nowrap;">
+  <!-- Filter Dropdown -->
+  <!-- <div class="filter-dropdown position-relative">
+    <button class="filter-btn d-flex align-items-center gap-1" onclick="toggleFilterDropdown()">
+      <i class="fas fa-filter"></i> Filter
+    </button>
+    <div id="filterOptions" class="filter-options position-absolute bg-white border shadow rounded d-none flex-column mt-1">
+      <button onclick="changeSort('latest')">Latest</button>
+      <button onclick="changeSort('most_viewed')">Most Viewed</button>
+      <button onclick="changeSort('oldest')">Oldest</button>
+      <button onclick="changeSort('relevant')">Relevant</button>
+    </div>
+  </div> -->
+
+    <!-- Filter Dropdown -->
+  <select id="languageSelect" class="form-select form-select-sm rounded-pill" style="width: auto;" onchange="changeLanguage(this.value)">
+    <option value="">Filter</option>
+      <option onclick="changeSort('latest')">Latest</option>
+      <option onclick="changeSort('most_viewed')">Most Viewed</option>
+      <option onclick="changeSort('oldest')">Oldest</option>
+      <option onclick="changeSort('relevant')">Relevant</option>
+    <!-- Add others as needed -->
+  </select>
+
+  
+  <!-- Language Dropdown -->
+  <select id="languageSelect" class="form-select form-select-sm rounded-pill" style="width: auto;" onchange="changeLanguage(this.value)">
+    <option value="">All Languages</option>
+    <option value="en">English</option>
+    <option value="hi">Hindi</option>
+    <!-- Add others as needed -->
+  </select>
+  <!-- Change Feed -->
+  <a href="{% url 'home' %}"><button id="changeFeedBtn" class="btn btn-outline-dark rounded-pill">Change Feed</button></a>
+</div>
+
+<!-- Continue with rest of page content -->
+
+
+  <!-- {% for mood_option in moods %}
+    <button class="mood-btn {% if mood == mood_option.slug %}active{% endif %}" onclick="changeMood('{{ mood_option.slug }}')">{{ mood_option.name }}</button>
+  {% endfor %} -->
+</div>
+
+<div id="videoContainer" class="video-grid"></div>
+<button id="loadMore" class="view-more">View More</button>
+
+
+<!-- Slide-in User Panel -->
+<div id="userPanel" class="user-panel">
+  <div class="panel-header">
+    <h3>User Profile</h3>
+    <button onclick="toggleUserPanel()" class="close-btn">&times;</button>
+  </div>
+
+  <div class="user-content">
+
+    {% if user.userprofile.avatar %}
+      <img id="userAvatar" src="{{ user.userprofile.avatar.url }}" alt="Custom Avatar" class="avatar-icon">
+    {% elif user.userprofile.avatar_url %}
+      <img id="userAvatar" src="{{ user.userprofile.avatar_url }}" alt="Google Avatar" class="avatar-icon">
+    {% else %}
+      <img id="userAvatar" src="{% static 'images/avatar-placeholder.png' %}" alt="Default Avatar" class="avatar-icon">
+    {% endif %}
+
+    <h4 id="userName">@{{ user.userprofile.username }}</h4>
+
+    <p id="userBio">
+      {% if user.userprofile.bio %}
+        {{ user.userprofile.bio }}
+      {% else %}
+        No bio added yet.
+      {% endif %}
+    </p>
+
+    <a href="{% url 'dashboard' %}" class="edit-btn">Edit Profile</a>
+    <a href="{% url 'account_logout' %}" class="logout-btn">Logout</a>
+  </div>
+</div>
+
+<div id="panelOverlay" class="panel-overlay" onclick="toggleUserPanel()"></div>
+
+
+<script>
+  let pageToken = "";
+  let currentMood = "{{ mood }}";
+  let currentSort = "latest";
+  let currentLanguage = "";
+
+  const container = document.getElementById("videoContainer");
+  const loadMoreBtn = document.getElementById("loadMore");
+
+  // Load videos from backend API
+  // Fisher-Yates shuffle function
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// Fetch and render mixed Reddit + YouTube content
+async function loadVideos(reset = false) {
+  const res = await fetch(`/api/youtube/${currentMood}/?pageToken=${pageToken}&sort=${currentSort}&language=${currentLanguage}`);
+  const data = await res.json();
+
+  if (reset) container.innerHTML = "";
+
+  // Shuffle the array before displaying
+  const shuffledVideos = shuffleArray(data.videos);
+
+  shuffledVideos.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "video-card";
+
+    if (item.type === "reddit_video") {
+      div.innerHTML = `
+        <video controls class="video-thumb">
+          <source src="${item.video_url}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <div class="video-title">${item.title}</div>
+          <a href="${item.source}" target="_blank" style="color:#0066cc; font-size: 13px;">View on Reddit</a>
+        </div>
+      `;
+    } else if (item.type === "reddit_image") {
+      div.innerHTML = `
+        <img class="video-thumb" src="${item.image_url}" alt="${item.title}">
+        <div class="video-info">
+          <div class="video-title">${item.title}</div>
+          <a href="${item.source}" target="_blank" style="color:#0066cc; font-size: 13px;">View on Reddit</a>
+        </div>
+      `;
+    } else {
+      // YouTube video
+      div.innerHTML = `
+        <img class="video-thumb" src="${item.thumbnail}" alt="${item.title}">
+        <div class="video-info">
+          <div class="video-title">${item.title}</div>
+          <div class="video-channel">${item.channel}</div>
+          <a href="${item.video_url}" target="_blank" style="color:#0066cc; font-size: 13px;">Watch on YouTube</a>
+        </div>
+      `;
+    }
+
+    container.appendChild(div);
+  });
+
+  pageToken = data.nextPageToken || "";
+  loadMoreBtn.style.display = pageToken ? "block" : "none";
+}
+
+
+  // Initial load on page ready
+  window.onload = () => loadVideos();
+  loadMoreBtn.addEventListener("click", () => loadVideos());
+
+  // Mood change
+  function changeMood(slug) {
+    currentMood = slug;
+    pageToken = "";
+    loadVideos(true);
+    document.querySelectorAll(".mood-btn").forEach(btn => btn.classList.remove("active"));
+    const btn = Array.from(document.querySelectorAll(".mood-btn")).find(b => b.textContent.toLowerCase() === slug);
+    if (btn) btn.classList.add("active");
+  }
+
+  // Filter dropdown toggle
+  function toggleFilterDropdown() {
+    const dropdown = document.getElementById("filterOptions");
+    dropdown.style.display = dropdown.style.display === "flex" ? "none" : "flex";
+    dropdown.style.flexDirection = "column";
+  }
+
+  // Apply sorting
+  function changeSort(sortType) {
+    currentSort = sortType;
+    pageToken = "";
+    document.getElementById("filterOptions").style.display = "none";
+    loadVideos(true);
+  }
+
+  // Change language filter
+  function changeLanguage(lang) {
+    currentLanguage = lang;
+    pageToken = "";
+    loadVideos(true);
+  }
+
+
+  function toggleUserPanel() {
+  const panel = document.getElementById("userPanel");
+  const overlay = document.getElementById("panelOverlay");
+
+  panel.classList.toggle("open");
+  overlay.classList.toggle("show");
+}
+
+document.getElementById("userIcon").addEventListener("click", toggleUserPanel);
+
+// Search by keyword
+document.getElementById("searchInput").addEventListener("input", function () {
+  const keyword = this.value.toLowerCase();
+  const videoCards = document.querySelectorAll(".video-card");
+
+  videoCards.forEach(card => {
+    const title = card.querySelector(".video-title")?.textContent.toLowerCase() || "";
+    const channel = card.querySelector(".video-channel")?.textContent.toLowerCase() || "";
+    const show = title.includes(keyword) || channel.includes(keyword);
+    card.style.display = show ? "block" : "none";
+  });
+});
+
+</script>
+</body>
+</html>

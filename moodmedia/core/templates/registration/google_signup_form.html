@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Sign Up | AnyFeed{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 400px;">
+  <div class="bg-white p-4 rounded shadow mt-5">
+    <h3 class="text-center mb-4">Create an Account</h3>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      {% for field in form %}
+        <div class="mb-3">
+          {{ field.label_tag }}
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-success w-100">Sign Up</button>
+    </form>
+
+    <a class="google-btn" href="{% provider_login_url 'google' process='signup' %}">
+      <i class="fab fa-google"></i> Sign up with Google
+    </a>
+  </div>
+</div>
+{% endblock %}

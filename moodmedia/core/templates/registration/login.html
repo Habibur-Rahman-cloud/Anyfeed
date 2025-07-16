@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Login | AnyFeed{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 400px;">
+  <div class="bg-white p-4 rounded shadow mt-5">
+    <h3 class="text-center mb-4">Login to AnyFeed</h3>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="mb-3">
+        {{ form.login.label_tag }}
+        {{ form.login }}
+        {{ form.login.errors }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+
+      <button type="submit" class="btn btn-danger w-100">Login</button>
+    </form>
+
+    <p class="text-center mt-3">
+      <a href="{% url 'account_reset_password' %}">Forgot password?</a>
+    </p>
+
+    <a class="google-btn" href="{% provider_login_url 'google' %}">
+      <i class="fab fa-google"></i> Sign in with Google
+    </a>
+  </div>
+</div>
+{% endblock %}
