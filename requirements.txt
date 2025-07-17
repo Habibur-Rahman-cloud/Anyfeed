@@ -19,3 +19,7 @@ psycopg2-binary  # For PostgreSQL on Render
 
 # Other
 certifi
+
+
+pip install gunicorn
+pip freeze > requirements.txt
