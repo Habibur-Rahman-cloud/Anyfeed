@@ -1,0 +1,21 @@
+# Core
+Django>=4.2,<5.0
+gunicorn
+whitenoise
+dj-database-url
+python-dotenv
+
+# APIs
+google-api-python-client
+praw
+requests
+
+# Auth
+social-auth-app-django
+oauthlib
+
+# Optional useful packages
+psycopg2-binary  # For PostgreSQL on Render
+
+# Other
+certifi
